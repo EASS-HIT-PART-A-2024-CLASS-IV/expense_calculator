@@ -1,0 +1,26 @@
+version: "3.11"
+services:
+  backend:
+    build: app/Backend
+    ports: 
+      - "2345:2345" 
+    depends_on:
+      - mongodb
+    container_name: Backend
+  
+  frontend:
+    build: app/Frontend
+    command: streamlit run ui.py --server.port 3456
+    ports: 
+      - "3456:3456" 
+    container_name: Frontend
+
+  mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+        - "8008:27017"
+    container_name: mongodb
+

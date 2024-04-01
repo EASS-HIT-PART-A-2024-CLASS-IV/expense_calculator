@@ -1,9 +1,8 @@
-About the app:
+# Expense Calculator Backend part
 In this app you can manage your expences.
-You can creart, update, delete and calculate your expenses.
+You can create, see, delete and calculate your expenses.
 
-How to run the backend part?
-1. Enter the "Backend" folder
-2. Run the following commands:
-    docker build . -t expense_calcolation -f Dockerfile
-    docker run -p8070:80 app-dot-prod
+## Running the app:
+1. `git clone https://github.com/EASS-HIT-PART-A-2024-CLASS-IV/expense_calculator.git`
+2. Build the image: `docker build . -t expense_calcolation -f Dockerfil`
+3. Run the images: `docker run -p8070:80 app-dot-prod`

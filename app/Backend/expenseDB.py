@@ -1,42 +1,39 @@
 import pymongo
-from pymongo import MongoClient
-from datetime import datetime
+from pymongo.mongo_client import MongoClient
 
-host = 'localhost'
-port = 27017
-dbname = 'expenseCalculator'
+client = MongoClient("mongodb://root:root@mongodb:27017/?authMechanism=DEFAULT")
+db = client['expenseCalculator']
+expensesCollection = db['expensesCollection']
 
-client = pymongo.MongoClient(f'mongodb://{host}:{port}/')
-db = client[dbname]
-expensesCollection = db['expenses']
-
-try:
-    def createExpense(expenseData):
+def createNewExpense(expenseData):
+    try:
         result = expensesCollection.insert_one(expenseData)
-        return "Expense created succesfully"
+        return result 
+    except Exception as e:
+        print ("An error occurred while creating the expense:", e)
+        return None
 
-    def deleteExpense(expenseID):
-        result = expensesCollection.delete_one({"expenseID" : expenseID})
-        return "Expense deleted succesfully" if result.deleted_count else "No expense found with that expense ID"
+def allExpenses():
+    try:
+        result = expensesCollection.find({}, {"_id": 0})
+        listOfExpenses = list(result)
+        return listOfExpenses
+    except Exception as e:
+        print ("An error occurred while showing the expense:", e)
+        return None
+    
+def deleteExpense(Description):
+    try:
+        expensesCollection.delete_one({"Description": Description})
+        return True
+    except Exception as e:
+        print ("An error occurred while showing the expense:", e)
+        return False
 
-    def updateExpense(expenseID, expenseData):
-        result = expensesCollection.update_one({{"expenseID" : expenseID}}, {"$set" : expenseData})
-        return "Expense updated succesfully" if result.modified_count else "No expense found with that expense ID"
-
-    def allExpenses():
-        result = expensesCollection.find()
-        return list(result)
-
-    def sumOfExpenses():
-        result = expensesCollection.aggregate([{"$group": {"_id": None, "total": {"$sum": "$amount"}}}])
-        total = list(result)[0]['total'] if result.alive else 0
-        return {"totalAmount": total}
+def sumOfExpenses():
+    result = expensesCollection.aggregate([{"$group": {"_id": None, "total": {"$sum": "$amount"}}}])
+    total = list(result)[0]['total'] if result.alive else 0
+    return {"totalAmount": total}
         
-    # Fetch all the records
-    results = expensesCollection.find({})
-    for result in results:
-        print(result)
-
-finally:
-    client.close()
+    
     
