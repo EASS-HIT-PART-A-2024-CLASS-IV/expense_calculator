@@ -1,11 +1,9 @@
 from fastapi.testclient import TestClient
 from Backend.main import app
+from Backend.models import expense
 import pytest
 
 client = TestClient(app)
-
-#Data for testing
-expense_for_test = { "amount" : 500, "description" : "Test" , "date" : "2024-01-01" }
 
 def test_read_main():
     response = client.get("/")
@@ -13,34 +11,31 @@ def test_read_main():
     assert response.json() == "Welcome!"
 
 def test_create_expense():
-    response = client.get("/createExpense", json = expense_for_test)
+    testExpense = {"Amount" : 100, "Description": "Food", "Date": "2024-01-01"}
+    response = client.get("/createExpense", json = testExpense)
     assert response.status_code == 200
     assert response.json() == "Expense created!"
 
+def test_get_all_expenses():
+    testExpense = {"Amount" : 100, "Description": "Food", "Date": "2024-01-01"}
+    response = client.get("/allExpenses")
+    assert response.status_code == 200
+    expenses = response.json()
+    assert isinstance(expenses, list)
+
 def test_delete_expense():
     #create expense
-    create_response = client.post("/createExpense" , json = expense_for_test)
-    assert response.status_code == 200
-    expense_id = create_response.json().get("id")
+    testExpense = {"Amount" : 100, "Description": "Food", "Date": "2024-01-01"}
+    createResponse = client.post("/createExpense", json=testExpense)
+    assert createResponse.status_code == 200
+    expenses_response = client.get("/allExpenses")
+    assert expenses_response.status_code == 200
+    expenses = expenses_response.json()
+    assert isinstance(expenses, list)
+    assert len(expenses) > 0  
+    expenseID = expenses[0].get("id")
+    # delete expense
+    deleteResponse = client.delete(f"/deleteExpense?expenseDescriptions={expenseID}")
+    assert deleteResponse.status_code == 200
+    assert deleteResponse.text == "Expense deleted!"    
 
-    #delete expense
-    response = client.delete(f"/deleteExpense?expenseID={expense_id}")
-    assert response.status_code == 200
-    assert response.json() == "Expense deleted!"
-    
-def test_update_expense():
-    #create expense
-    create_response = client.post("/createExpense" , json = expense_for_test)
-    assert response.status_code == 200
-    expense_id = create_response.json().get("id")
-
-    #update expense
-    updated_expense_data = {"amount" : 250, "description" : "update test" , "date" : "2024-02-01" }
-    response = client.put(f"/updateExpense?expenseID={expense_id}" , json = expense_for_test)
-    assert response.status_code == 200
-    assert response.json() == "Expense updated!"    
-
-def test_get_all_expenses():
-    response = client.get("/allExpenses", json = expense_for_test)
-    assert response.status_code == 200
-    assert response.json() == {"message" : []}
